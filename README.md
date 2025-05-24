@@ -1,6 +1,6 @@
 # Taggables Package for Laravel
 
-[![Tests](https://github.com/humweb/taggables/actions/workflows/tests.yml/badge.svg)](https://github.com/humweb/taggables/actions/workflows/tests.yml)
+[![tests](https://github.com/humweb/taggables/actions/workflows/run-tests.yml/badge.svg)](https://github.com/humweb/taggables/actions/workflows/run-tests.yml)
 [![codecov](https://codecov.io/gh/humweb/taggables/graph/badge.svg)](https://codecov.io/gh/humweb/taggables)
 
 A powerful and flexible tagging package for Laravel applications with polymorphic relationships support and user-scoped tags.
