@@ -1,4 +1,7 @@
-# Laravel Taggable Package
+# Taggables Package for Laravel
+
+[![Tests](https://github.com/humweb/taggables/actions/workflows/tests.yml/badge.svg)](https://github.com/humweb/taggables/actions/workflows/tests.yml)
+[![codecov](https://codecov.io/gh/humweb/taggables/graph/badge.svg)](https://codecov.io/gh/humweb/taggables)
 
 A powerful and flexible tagging package for Laravel applications with polymorphic relationships support and user-scoped tags.
 
@@ -18,7 +21,7 @@ A powerful and flexible tagging package for Laravel applications with polymorphi
 You can install the package via composer:
 
 ```bash
-composer require humweb/taggable-package
+composer require humweb/taggables
 ```
 
 Publish the migrations:
