@@ -16,7 +16,7 @@ class TaggablesServiceProvider extends PackageServiceProvider
          * More info: https://github.com/spatie/laravel-package-tools
          */
         $package
-            ->name('taggable-package')
+            ->name('taggable')
             ->hasConfigFile()
             ->hasMigrations([
                 'create_tags_table',

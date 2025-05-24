@@ -11,39 +11,39 @@ use Illuminate\Database\Eloquent\Builder;
 class Tag extends Model
 {
     use HasFactory;
-    
+
     protected $fillable = ['name', 'slug', 'user_id', 'type'];
-    
+
     public function getTable()
     {
         return config('taggable.tables.tags', 'tags');
     }
-    
+
     protected static function boot()
     {
         parent::boot();
-        
+
         static::creating(function ($tag) {
             if (empty($tag->slug)) {
                 $tag->slug = static::generateSlug($tag->name);
             }
         });
     }
-    
+
     /**
      * Generate a unique slug for the tag
      */
     protected static function generateSlug(string $name): string
     {
         $slugger = config('taggable.slugger');
-        
+
         if (is_callable($slugger)) {
             return $slugger($name);
         }
-        
+
         return Str::slug($name);
     }
-    
+
 
     /**
      * Find or create a tag by name
@@ -51,24 +51,24 @@ class Tag extends Model
     public static function findOrCreate(string $name, ?string $type = null, ?int $userId = null): self
     {
         $slug = static::generateSlug($name);
-        
+
         $tag = static::where('slug', $slug)
             ->where('user_id', $userId)
-            ->when($type, fn($query) => $query->where('type', $type))
+            ->when($type, fn ($query) => $query->where('type', $type))
             ->first();
-        
-        if (!$tag) {
+
+        if (! $tag) {
             $tag = static::create([
-                'name' => $name,
-                'slug' => $slug,
+                'name'    => $name,
+                'slug'    => $slug,
                 'user_id' => $userId,
-                'type' => $type,
+                'type'    => $type,
             ]);
         }
-        
+
         return $tag;
     }
-    
+
     /**
      * Find or create a tag for a specific user
      */
@@ -77,7 +77,7 @@ class Tag extends Model
         $userId = is_object($user) ? $user->id : $user;
         return static::findOrCreate($name, $type, $userId);
     }
-    
+
     /**
      * Find or create a global tag
      */
@@ -85,7 +85,7 @@ class Tag extends Model
     {
         return static::findOrCreate($name, $type, null);
     }
-    
+
     /**
      * Find or create multiple tags
      */
@@ -95,7 +95,7 @@ class Tag extends Model
             return static::findOrCreate($name, $type, $userId);
         });
     }
-    
+
     /**
      * Scope to filter tags for a specific user
      */
@@ -103,7 +103,7 @@ class Tag extends Model
     {
         return $query->where('user_id', $userId);
     }
-    
+
     /**
      * Scope to get global tags only
      */
@@ -111,7 +111,7 @@ class Tag extends Model
     {
         return $query->whereNull('user_id');
     }
-    
+
     /**
      * Scope to get user tags with global tags
      */
@@ -121,7 +121,7 @@ class Tag extends Model
             $q->where('user_id', $userId)->orWhereNull('user_id');
         });
     }
-    
+
     /**
      * Scope to filter tags by type
      */
@@ -129,7 +129,7 @@ class Tag extends Model
     {
         return $query->where('type', $type);
     }
-    
+
     /**
      * Scope to search tags containing a string
      */
@@ -137,10 +137,10 @@ class Tag extends Model
     {
         return $query->where(function ($query) use ($search) {
             $query->where('name', 'LIKE', "%{$search}%")
-                  ->orWhere('slug', 'LIKE', "%{$search}%");
+                ->orWhere('slug', 'LIKE', "%{$search}%");
         });
     }
-    
+
     /**
      * Get popular tags
      */
@@ -149,7 +149,7 @@ class Tag extends Model
         $query = static::withCount('taggables')
             ->orderBy('taggables_count', 'desc')
             ->limit($limit);
-            
+
         if ($userId && config('taggable.user_scope.mix_user_and_global', true)) {
             $query->forUserWithGlobal($userId);
         } elseif ($userId) {
@@ -157,10 +157,10 @@ class Tag extends Model
         } else {
             $query->global();
         }
-        
+
         return $query->get();
     }
-    
+
     /**
      * Get popular user tags
      */
@@ -172,7 +172,7 @@ class Tag extends Model
             ->limit($limit)
             ->get();
     }
-    
+
     /**
      * Get popular global tags
      */
@@ -184,7 +184,7 @@ class Tag extends Model
             ->limit($limit)
             ->get();
     }
-    
+
     /**
      * Suggest tags based on partial input
      */
@@ -209,7 +209,7 @@ class Tag extends Model
 
         return $searchQuery->get();
     }
-    
+
     /**
      * Check if tag is global
      */
@@ -217,7 +217,7 @@ class Tag extends Model
     {
         return is_null($this->user_id);
     }
-    
+
     /**
      * Check if tag is owned by user
      */
@@ -226,53 +226,53 @@ class Tag extends Model
         $userId = is_object($user) ? $user->id : $user;
         return $this->user_id === $userId;
     }
-    
+
     /**
      * Get tag cloud with weights
      */
-    public static function tagCloud(?int $userId = null): Collection
+    public static function tagCloud(?int $userId = null, bool $withGlobal = false): Collection
     {
         $query = static::withCount('taggables');
-        
-        if ($userId && config('taggable.user_scope.mix_user_and_global', true)) {
+
+        if ($userId && $withGlobal && config('taggable.user_scope.mix_user_and_global', true)) {
             $query->forUserWithGlobal($userId);
         } elseif ($userId) {
             $query->forUser($userId);
         }
-        
+
         $tags = $query->get();
-        
+
         if ($tags->isEmpty()) {
             return $tags;
         }
-        
+
         $maxCount = $tags->max('taggables_count');
         $minCount = $tags->min('taggables_count');
-        
+
         return $tags->map(function ($tag) use ($maxCount, $minCount) {
-            $weight = $minCount == $maxCount 
-                ? 1 
+            $weight = $minCount == $maxCount
+                ? 1
                 : ($tag->taggables_count - $minCount) / ($maxCount - $minCount);
-            
+
             $tag->weight = round($weight * 10); // 0-10 scale
             return $tag;
         });
     }
-    
+
     /**
      * Get unused tags
      */
     public function scopeUnusedTags($query, ?int $userId = null)
     {
         $query->has('taggables', '=', 0);
-        
+
         if ($userId) {
             $query->forUser($userId);
         }
-        
+
         return $query;
     }
-    
+
     /**
      * Get all taggable models for this tag
      */
@@ -280,8 +280,9 @@ class Tag extends Model
     {
         return $this->hasMany(Taggable::class, 'tag_id');
     }
-    
+
     // @codeCoverageIgnoreStart
+
     /**
      * Relationship to user
      */

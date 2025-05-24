@@ -39,7 +39,7 @@ return [
         'enabled' => true,
         
         // Allow creation of global tags (null user_id)
-        'allow_global_tags' => true,
+        'allow_global_tags' => false,
         
         // Include global tags when querying user tags
         'mix_user_and_global' => true,
