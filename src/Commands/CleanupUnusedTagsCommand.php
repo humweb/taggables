@@ -47,7 +47,7 @@ class CleanupUnusedTagsCommand extends Command
         
         if ($unusedTags->isEmpty()) {
             $this->info('No unused tags found.');
-            return Command::SUCCESS;
+            return static::SUCCESS;
         }
         
         $this->info("Found {$unusedTags->count()} unused tags.");
@@ -67,7 +67,7 @@ class CleanupUnusedTagsCommand extends Command
             
             if (!$this->confirm('Do you want to delete these tags?')) {
                 $this->info('Operation cancelled.');
-                return Command::SUCCESS;
+                return static::SUCCESS;
             }
         }
         
@@ -79,6 +79,6 @@ class CleanupUnusedTagsCommand extends Command
         
         $this->info("Successfully deleted {$count} unused tags.");
         
-        return Command::SUCCESS;
+        return static::SUCCESS;
     }
 } 
