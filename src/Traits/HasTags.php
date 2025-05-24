@@ -13,6 +13,19 @@ use Illuminate\Support\Str;
 trait HasTags
 {
     /**
+     * Boot the HasTags trait.
+     */
+    public static function bootHasTags()
+    {
+        static::deleting(function ($model) {
+            if (method_exists($model, 'isForceDeleting') && !$model->isForceDeleting()) {
+                return;
+            }
+            $model->tags()->detach();
+        });
+    }
+
+    /**
      * Get all tags attached to the model
      */
     public function tags(): MorphToMany

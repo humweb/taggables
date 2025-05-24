@@ -545,3 +545,36 @@ it('scopes taggedWith', function () {
     expect($resultsBeta)->toHaveCount(1);
     expect($resultsBeta->first()->id)->toBe($this->model->id);
 });
+
+it('deletes taggables when model is deleted', function () {
+    $model = TestModelWithTags::create(['name' => 'Deletable Model']);
+    $tag1 = Tag::factory()->create(['name' => 'TagToDelete1']);
+    $tag2 = Tag::factory()->create(['name' => 'TagToDelete2']);
+
+    $model->attachTag($tag1);
+    $model->attachTag($tag2);
+
+    $this->assertDatabaseHas('taggables', [
+        'taggable_id' => $model->id,
+        'taggable_type' => $model->getMorphClass(),
+        'tag_id' => $tag1->id
+    ]);
+    $this->assertDatabaseHas('taggables', [
+        'taggable_id' => $model->id,
+        'taggable_type' => $model->getMorphClass(),
+        'tag_id' => $tag2->id
+    ]);
+
+    $model->delete();
+
+    $this->assertDatabaseMissing('taggables', [
+        'taggable_id' => $model->id,
+        'taggable_type' => $model->getMorphClass(),
+        'tag_id' => $tag1->id
+    ]);
+    $this->assertDatabaseMissing('taggables', [
+        'taggable_id' => $model->id,
+        'taggable_type' => $model->getMorphClass(),
+        'tag_id' => $tag2->id
+    ]);
+});

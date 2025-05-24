@@ -115,7 +115,7 @@ it('can get tag cloud for a specific user', function () {
     $model1->attachTag($globalTag);  // Global tag used by model1 (total 1 use for globalTag)
 
     config()->set('taggable.user_scope.mix_user_and_global', true);
-    $cloud = Tag::tagCloud(1);
+    $cloud = Tag::tagCloud(1, true);
 
     expect($cloud)->toHaveCount(2);
     $weights = $cloud->pluck('weight', 'name')->toArray();
